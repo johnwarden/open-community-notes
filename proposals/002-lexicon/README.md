@@ -1,120 +1,142 @@
 # Proposal: Open Community Notes Lexicon
 
-## **1\. Introduction**
+## 1. Introduction
 
-This document proposes a lexicon for Open Community Notes, as outlined in the main [Open Community Notes Architecture proposal](https://github.com/johnwarden/open-community-notes/tree/master/proposals/001-architecture). 
+This document proposes a new lexicon for the Open Community Notes per the main [Open Community Notes Architecture proposal](https://github.com/johnwarden/open-community-notes/tree/master/proposals/001-architecture).
 
-The proposed lexicon namespace is **org.opencommunitynotes**.
+Open Community Notes is mean to be a flexible, generalized community-driven moderation system capable of handling everything from adding context to flagging spam and abuse. Crucially, it is designed to target content both within the AT Protocol and on the wider web (e.g., news articles, posts on other social networks).
 
-## **2\. Note Record (org.opencommunitynotes.note)**
+## 2. Reusable Definitions (`org.opencommunitynotes.defs`)
 
-This record represents a single community note created by a user to add context to another piece of content on the network.
+### 2.1. `subjectRef`
 
-### **2.1. Spec**
-
-| Field Name | Type | Required | Description |
-| :---- | :---- | :---- | :---- |
-| subject | com.atproto.repo.strongRef | Yes | A strong reference to the record that the note is about. |
-| classification | string | Yes | A mandatory classification for why the post may be misleading, based on the author's selection. |
-| text | string | Yes | The user-written explanation providing context. |
-| sourceUri | string (format: uri) | Yes | A mandatory URI pointing to a source that substantiates the note. |
-| contributorId | string | Yes | The persistent, anonymous identifier for the user who created the note. |
-| createdAt | string (format: datetime) | Yes | The timestamp of when the note was created. |
-
-### **2.2. Defined Values for classification**
-
-The classification field must contain one of the following string keys:
-
-| Lexicon Key | UI Text |
-| :---- | :---- |
-| factual\_error | It contains a factual error |
-| altered\_media | It contains a digitally altered photo or video |
-| outdated\_information | It contains outdated information that may be misleading |
-| misrepresentation\_or\_missing\_context | It is a misrepresentation or missing important context |
-| unverified\_claim\_as\_fact | It presents an unverified claim as a fact |
-| joke\_or\_satire | It is a joke or satire that might be misinterpreted as a fact |
-| other | Other |
-
-### **2.3. Example JSON**
-
-{  
-  "$type": "org.opencommunitynotes.note",  
-  "subject": {  
-    "uri": "at://did:plc:xxxxxxxxxxxx/app.bsky.feed.post/3kabc123xyz",  
-    "cid": "bafyreibxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  
-  },  
-  "classification": "misrepresentation\_or\_missing\_context",  
-  "text": "This quote is accurate, but it omits the following sentence which provides critical context about the speaker's intent.",  
-  "sourceUri": "https://example.com/archive/full\_speech\_transcript.html",  
-  "contributorId": "anon:ab34fec9de56",  
-  "createdAt": "2025-06-25T15:30:00.000Z"  
-}
-
-## **3\. Vote Record (org.opencommunitynotes.vote)**
-
-This record represents a user's rating on the helpfulness of a specific community note. Aggregated votes are used to determine which notes are displayed.
-
-### **3.1. Spec**
+This is a custom reference object that can point to any piece of content, on or off the AT Protocol. It supports both strong, verifiable references and weak, location-only references.
 
 | Field Name | Type | Required | Description |
-| :---- | :---- | :---- | :---- |
-| subject | com.atproto.repo.strongRef | Yes | A strong reference to the org.opencommunitynotes.note being voted on. |
-| helpfulness | string | Yes | The helpfulness rating. Must be one of "helpful", "somewhat\_helpful", or "not\_helpful". |
-| reasons | string\[\] | No | An optional array of predefined reasons justifying the rating. |
-| contributorId | string | Yes | The persistent, anonymous identifier for the user casting the vote. |
-| createdAt | string (format: datetime) | Yes | The timestamp of when the vote was cast. |
+| :--- | :--- | :--- | :--- |
+| `uri` | `string` (format: `uri`) | Yes | The URI of the content being targeted (e.g., `at://...` or `https://...`). |
+| `cid` | `string` | No | The Content Identifier (CID) of the subject, if it is an AT-Proto record. Its presence indicates a strong reference. |
 
-### **3.2. Defined Values for reasons**
+## 3. Label Record (`org.opencommunitynotes.label`)
 
-The list of valid reasons changes depending on the helpfulness rating.
+This record represents a single label applied to a piece of content by a contributor.
 
-**Valid reasons if helpfulness is "helpful" or "somewhat\_helpful":**
+### 3.1. Spec
 
-| Lexicon Key | UI Text |
-| :---- | :---- |
-| cites\_high\_quality\_sources | Cites high-quality sources |
-| easy\_to\_understand | Easy to understand |
-| addresses\_claim | Directly addresses the post's claim |
-| provides\_important\_context | Provides important context |
-| neutral\_or\_unbiased | Neutral or unbiased language |
-| other | Other |
+| Field Name | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `subject` | `org.opencommunitynotes.defs#subjectRef`| Yes | A reference to the content being labeled. |
+| `label` | `string` | Yes | A string identifying the label being applied, using a dot-notation hierarchy. |
+| `text` | `string` | No | An optional explanation. Required for parametric labels (e.g., `context.*`). Source links are embedded here. |
+| `contributorId` | `string` | Yes | The persistent, anonymous identifier for the user applying the label. |
+| `createdAt` | `string` (format: `datetime`)| Yes | The timestamp of when the label was applied. |
 
-**Valid reasons if helpfulness is "not\_helpful":**
+### 3.2. Example Label Values
 
-| Lexicon Key | UI Text |
-| :---- | :---- |
-| unreliable\_sources | Sources not included or unreliable |
-| sources\_dont\_support\_note | Sources do not support note |
-| incorrect\_information | Incorrect information |
-| opinion\_or\_speculation | Opinion or speculation |
-| typos\_or\_unclear | Typos or unclear language |
-| misses\_key\_points | Misses key points or irrelevant |
-| argumentative\_or\_biased | Argumentative or biased language |
-| note\_not\_needed | Note not needed on this post |
-| harassment\_or\_abuse | Harassment or abuse |
-| other | Other |
+* **Contextual Labels (Parametric - require `text`)**: `context.factual_error`, `context.misrepresentation_or_missing_context`, `context.altered_media`, etc.
+* **Flagging Labels (Non-Parametric - `text` is optional)**: `spam`, `abuse.harassment`, `abuse.threat_of_violence`, etc.
 
-### **3.3. Example JSON**
+### 3.3. Example Note Record JSON
 
-{  
-  "$type": "org.opencommunitynotes.vote",  
-  "subject": {  
-    "uri": "at://did:plc:yyyyyyyyyy/org.opencommunitynotes.note/3kdef456abc",  
-    "cid": "bafyreibbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"  
-  },  
-  "helpfulness": "helpful",  
-  "reasons": \[  
-    "cites\_high\_quality\_sources",  
-    "provides\_important\_context"  
-  \],  
-  "contributorId": "anon:de98bca76f54",  
-  "createdAt": "2025-06-25T15:35:00.000Z"  
+**Example of a Strong Reference to an AT-Proto Post:**
+```json
+{
+  "$type": "org.opencommunitynotes.label",
+  "subject": {
+    "uri": "at://did:plc:xxxxxxxxxxxx/app.bsky.feed.post/3kabc123xyz",
+    "cid": "bafyreibxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  "label": "context.factual_error",
+  "text": "This post contains an incorrect statistic. The actual number is 42%, not 52%. Source: [https://example.com/stats](https://example.com/stats)",
+  "contributorId": "anon:ab34fec9de56",
+  "createdAt": "2025-06-25T19:00:00.000Z"
 }
+```
 
-## **4\. Design Decisions and Rationale**
+**Example of a Weak Reference to a Mastodon Post:**
+```json
+{
+  "$type": "org.opencommunitynotes.label",
+  "subject": {
+    "uri": "[https://mastodon.social/@user/123456789](https://mastodon.social/@user/123456789)"
+  },
+  "label": "spam",
+  "contributorId": "anon:cd56ef78ab90",
+  "createdAt": "2025-06-25T19:05:00.000Z"
+}
+```
 
-* **Lexicon Namespace:** The org.opencommunitynotes namespace was chosen over app.bsky.\* to reflect the project's independent, community-driven nature. This follows standard open-source etiquette, avoids claiming an official namespace without permission, and provides a clean path for future integration should the Bluesky team choose to adopt the feature.  
-* **Anonymous-by-Design:** The architecture was changed to store records on a specialized "Community Notes PDS" rather than individual user repositories. This necessitated the contributorId field. This explicit, anonymous identifier allows the system to build a contributor reputation model (crucial for algorithms like bridging) without exposing the public DIDs of note authors and voters, thus protecting them from potential harassment.  
-* **Verifiable Links:** The use of com.atproto.repo.strongRef (containing both a URI and a CID) for the subject field is a critical security feature. The URI locates the content, while the CID verifies its integrity. This guarantees that a note is always linked to the *exact version* of the content it was written about, preventing context-drifting and manipulation.  
-* **High-Fidelity to UI:** The classification options for notes and the reasons for votes are mapped directly from the provided UI screenshots of X's Community Notes. This ensures the data model is a precise representation of the intended user experience, making front-end development more straightforward.  
-* **Structured Data Fields:** Using an array of predefined string keys for reasons (e.g., unreliable\_sources) instead of allowing free text is intentional. This structured approach makes the data easy to aggregate, query, and analyze, which is essential for the algorithms that will determine a note's overall helpfulness score.
+## 4. Vote Record (`org.opencommunitynotes.vote`)
+
+This record represents a user's rating on the helpfulness or validity of a specific label.
+
+### 4.1. Spec
+
+| Field Name | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `subject` | `com.atproto.repo.strongRef`| Yes | A **strong reference** to the `org.opencommunitynotes.label` record being voted on. |
+| `helpfulness` | `string` | Yes | The rating. Must be one of `"helpful"`, `"somewhat_helpful"`, or `"not_helpful"`. |
+| `reasons` | `string[]` | No | An optional array of predefined reasons justifying the rating. |
+| `contributorId` | `string` | Yes | The persistent, anonymous identifier for the user casting the vote. |
+| `createdAt` | `string` (format: `datetime`)| Yes | The timestamp of when the vote was cast. |
+
+
+### 4.2. Defined Values for `reasons`
+
+The list of valid reasons is derived from the user-facing UI options, with lexicon keys aligned to X's Community Notes ratings data model for consistency.
+
+**Valid reasons if `helpfulness` is `"helpful"` or `"somewhat_helpful"`:**
+
+| Lexicon Key | UI Text / Aligns with `helpful*` | 
+ | ----- | ----- | 
+| `cites_good_sources` | Cites high-quality sources | 
+| `is_clear` | Easy to understand | 
+| `addresses_claim` | Directly addresses the post's claim | 
+| `provides_important_context` | Provides important context | 
+| `is_unbiased` | Neutral or unbiased language | 
+| `other` | Other | 
+
+**Valid reasons if `helpfulness` is `"not_helpful"`:**
+
+| Lexicon Key | UI Text / Aligns with `notHelpful*` | 
+ | ----- | ----- | 
+| `sources_missing_or_unreliable` | Sources not included or unreliable | 
+| `sources_dont_support_note` | Sources do not support note | 
+| `is_incorrect` | Incorrect information | 
+| `is_opinion_or_speculation` | Opinion or speculation | 
+| `is_hard_to_understand` | Typos or unclear language | 
+| `is_off_topic_or_irrelevant` | Misses key points or irrelevant | 
+| `is_argumentative_or_biased` | Argumentative or biased language | 
+| `note_not_needed` | Note not needed on this post |
+| `is_spam_harassment_or_abuse` | Spam, harassment, or abuse |
+| `other` | Other | 
+
+### 4.3. Example JSON
+
+```json
+{
+  "$type": "org.opencommunitynotes.vote",
+  "subject": {
+    "uri": "at://did:plc:pds_host_did/org.opencommunitynotes.label/3klabelrecordkey",
+    "cid": "bafyreidddddddddddddddddddddddddddddddddddd"
+  },
+  "helpfulness": "not_helpful",
+  "reasons": [
+    "is_opinion_or_speculation",
+    "sources_dont_support_note"
+  ],
+  "contributorId": "anon:ef78ab90cd56",
+  "createdAt": "2025-06-25T18:10:00.000Z"
+}
+```
+
+## 5. Design Decisions and Rationale
+
+* **Universal Subject References:** The lexicon supports labeling content anywhere on the web via a custom `subjectRef` object containing a `uri` and an optional `cid`. The presence of a `cid` indicates a "strong" (verifiable) reference to an AT-Proto object, while its absence indicates a "weak" reference to external content.
+* **Generalized Labeling Protocol:** The system is designed as a flexible labeling protocol. This allows the community to apply a wide range of hierarchical labels (e.g., `context.*`, `spam`, `abuse.*`) using the same core records.
+* **Precedent from Existing Systems:** To build on a proven model, the initial set of `context.*` labels and the `reasons` for voting are directly adapted from the user-facing options and data model of X's Community Notes. The list of reasons prioritizes the current UI, excluding legacy fields from the data model, to create a clean and relevant specification.
+* **Parametric vs. Non-Parametric Labels:** The design distinguishes between labels that require additional data (like `text` for a `context` note) and those that are self-sufficient (like a `spam` flag) by making the `text` field optional.
+* **Embedded Sources:** To align with established patterns and allow for multiple references, all source links are embedded directly within the optional `text` field.
+* **Contextual Voting:** The `vote` record is used to assess the quality of an applied `label`. Client applications can adapt the UI, for instance by hiding the specific `reasons` checkboxes when voting on simple flags where they may not be relevant.
+* **Lexicon Namespace & Anonymity:** The `org.opencommunitynotes` namespace reflects the project's independent nature, and the `contributorId` field enables a reputation system built on persistent, anonymous identifiers.
+
