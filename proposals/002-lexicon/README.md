@@ -1,33 +1,23 @@
 # Proposal: Open Community Notes Lexicon
 
-## 1. Introduction
+Open Community Notes uses the [social.pmsky lexicon](https://github.com/pmsky-social/app/blob/main/lexicons). The Drew McArthur, the maintainer of (pmsky)[https://pmsky.social/) lexicon has kindly expanded the lexicon to meet our requirements.
 
-This document proposes a new lexicon for the Open Community Notes per the main [Open Community Notes Architecture proposal](https://github.com/johnwarden/open-community-notes/tree/master/proposals/001-architecture).
+- `social.pmsky.proposal`: For proposing a moderation action (e.g. adding a label w/ note to a post).
+- `social.pmsky.vote`: For approving or disapproving of proposals.
 
-This lexicon defines three main record types:
-
-- `org.opencommunitynotes.proposal`: For proposing a moderation action (adding a label or annotation to a post).
-- `org.opencommunitynotes.vote`: For approving or disapproving of proposals.
-- `org.opencommunitynotes.label`: Like `com.atproto.label.defs#label`, but as a concrete record type, and with additional optional fields 'note' and 'proposal'.
-
-
-These are supersets of the `social.pmsky.proposal`, `social.pmsky.vote`, and `social.pmsky.label` lexicons.
-
-## 2. Proposal Record (`org.opencommunitynotes.proposal`)
-
-A proposed moderation action (e.g. adding a label or annotation to a post). Refers to some other resource via URI (e.g. an atproto post).
+## 2. Proposal Record (`social.pmsky.proposal`)
 
 ### 2.1. Spec
 
 | Field Name | Type | Required | Description |
 | :--- | :--- | :--- | :--- |
 | `ver` | `integer` | No | The AT Protocol version of the proposal object. |
-| `typ` | `string` | Yes | The type of moderation action being proposed. e.g. 'post_label'. |
+| `typ` | `string` | Yes | The type of moderation action being proposed. e.g. 'label'. |
 | `src` | `string` (did) | Yes | DID of the actor who created this proposal. |
 | `uri` | `string` (uri) | Yes | AT URI of the resource that this proposal applies to. |
 | `cid` | `string` (cid) | No | Optionally, CID specifying the specific version of 'uri' resource. |
 | `val` | `string` | Yes | The short string name of the value of the proposed label. |
-| `note` | `string` | No | For 'readers-added-context' labels, the full text of the proposed annotation. |
+| `note` | `string` | No | For 'needs-context' labels, the full text of the proposed annotation. |
 | `reasons`| `string[]` | No | An optional array of predefined reasons justifying the moderation action. |
 | `aid` | `string` | No | The persistent, anonymous identifier for the user creating the proposal. |
 | `cts` | `string` (datetime)| Yes | Timestamp when this proposal was created. |
@@ -36,7 +26,7 @@ A proposed moderation action (e.g. adding a label or annotation to a post). Refe
 
 ### 2.2. Defined Values for `reasons`
 
-| Lexicon Key |
+| Value |
 | :--- |
 | `factual_error` |
 | `altered_media` |
@@ -49,11 +39,11 @@ A proposed moderation action (e.g. adding a label or annotation to a post). Refe
 ### 2.3. Example JSON
 ```json
 {
-  "$type": "org.opencommunitynotes.proposal",
-  "typ": "post_label",
+  "$type": "social.pmsky.proposal",
+  "typ": "label",
   "src": "did:plc:communitynotesservice",
   "uri": "at://did:plc:xxxxxxxxxxxx/app.bsky.feed.post/3kabc123xyz",
-  "val": "readers-added-context",
+  "val": "needs-context",
   "note": "This photo was taken in 2015, not during the recent events.",
   "reasons": ["outdated_information"],
   "aid": "anon:ab34fec9de56",
@@ -61,9 +51,7 @@ A proposed moderation action (e.g. adding a label or annotation to a post). Refe
 }
 ```
 
-## 3. Vote Record (`org.opencommunitynotes.vote`)
-
-A vote record, representing a user's approval or disapproval of the referenced resource (e.g. voting for/against a proposal, upvoting/downvoting a post).
+## 3. Vote Record (`social.pmsky.vote`)
 
 ### 3.1. Spec
 
@@ -80,7 +68,7 @@ A vote record, representing a user's approval or disapproval of the referenced r
 
 ### 3.2. Defined Values for `reasons`
 
-| Lexicon Key |
+| Value |
 | :--- |
 | `cites_high_quality_sources` |
 | `is_clear` |
@@ -101,9 +89,9 @@ A vote record, representing a user's approval or disapproval of the referenced r
 ### 3.3. Example JSON
 ```json
 {
-  "$type": "org.opencommunitynotes.vote",
+  "$type": "social.pmsky.vote",
   "src": "did:plc:somevoter",
-  "uri": "at://did:plc:communitynotesservice/org.opencommunitynotes.proposal/3kprop123abc",
+  "uri": "at://did:plc:communitynotesservice/social.pmsky.proposal/3kprop123abc",
   "cid": "bafyreidddddddddddddddddddddddddddddddddddd",
   "val": 1,
   "reasons": [
@@ -115,44 +103,7 @@ A vote record, representing a user's approval or disapproval of the referenced r
 }
 ```
 
-## 4. Label Record (`org.opencommunitynotes.label`)
-
-Like `com.atproto.label.defs#label`, but as a concrete record type, and with additional optional fields 'note' and 'proposal'.
-
-### 4.1. Spec
-
-| Field Name | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `ver` | `integer` | No | The AT Protocol version of the label object. |
-| `src` | `string` (did) | Yes | DID of the actor who created this label. |
-| `uri` | `string` (uri) | Yes | AT URI of the resource that this label applies to. |
-| `cid` | `string` (cid) | No | Optionally, CID specifying the specific version of 'uri' resource. |
-| `val` | `string` | Yes | The short string name of the value or type of this label. |
-| `note` | `string` | No | The full text of any annotation associated with this label. |
-| `proposal`| `ref` | No | A strong reference to the proposal that created this label. |
-| `neg` | `boolean` | No | If true, this is a negation label, removing a previous label. |
-| `cts` | `string` (datetime)| Yes | Timestamp when this label was created. |
-| `exp` | `string` (datetime)| No | Timestamp at which this label expires. |
-| `sig` | `bytes` | No | Signature of dag-cbor encoded label. |
-
-### 4.2. Example JSON
-```json
-{
-  "$type": "org.opencommunitynotes.label",
-  "src": "did:plc:communitynotesservice",
-  "uri": "at://did:plc:xxxxxxxxxxxx/app.bsky.feed.post/3kabc123xyz",
-  "cid": "bafyreibxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "val": "readers-added-context",
-  "note": "This photo was taken in 2015, not during the recent events.",
-  "proposal": {
-      "uri": "at://did:plc:communitynotesservice/org.opencommunitynotes.proposal/3kprop123abc",
-      "cid": "bafyreidddddddddddddddddddddddddddddddddddd"
-  },
-  "cts": "2025-06-26T10:00:00.000Z"
-}
-```
-
-## 5. Dispute Mechanism: Proposing a Label on a Label
+## 4. Dispute Mechanism: Proposing a Label on a Label
 
 A crucial feature of a robust moderation system is the ability to dispute or rebut a label. This protocol handles disputes by reusing the `proposal` records to create a "meta-label" that targets another proposal. This avoids adding new record types to the lexicon, keeping the protocol lean.
 
@@ -169,10 +120,10 @@ This creates a chain of context that can be algorithmically scored and presented
 ### 5.1. Example Dispute Proposal JSON
 ```json
 {
-  "$type": "org.opencommunitynotes.proposal",
-  "typ": "post_label",
+  "$type": "social.pmsky.proposal",
+  "typ": "label",
   "src": "did:plc:communitynotesservice",
-  "uri": "at://did:plc:communitynotesservice/org.opencommunitynotes.proposal/3klabel987zyx",
+  "uri": "at://did:plc:communitynotesservice/social.pmsky.proposal/3klabel987zyx",
   "val": "label-incorrect",
   "note": "The original note claims the photo is from 2015, but it's actually current.Here's the source.",
   "aid": "anon:userB",
@@ -181,11 +132,12 @@ This creates a chain of context that can be algorithmically scored and presented
 ```
 
 
-## 6. Design Decisions and Rationale
+## 5. Design Decisions and Rationale
 
 * **Lexicon Compatibility:** This lexicon is a superset of the social.pmsky lexicon to maximize potential interoperability. And in that lexicon, the `label` record identical to `com.atproto.label.defs#label`but as a concrete record type. This allows standard clients to process these records by ignoring the extra fields (`reason`, `note`, `aid`).
-* **Flexible Subject Fields:** The `label` record uses top-level `uri` and optional `cid` fields to target any content on the web. The `rating` record uses the standard `com.atproto.repo.strongRef` `subject` field because it *must* target a `label` record, which always exists within the AT Protocol. Support for external content is achieved by making the top-level `cid` field in the `label` record optional.
-* **Recursive Dispute Mechanism:** The protocol supports disputes by reusing the `label` record to target propsals. This elegant, recursive design keeps the lexicon simple while enabling complex moderation dialogues.
+* **Generality:** Works not just for Notes, and not just for labels, but for moderation actions in general.
+* **Flexible Subject Fields:** The `proposal` record uses top-level `uri` and optional `cid` fields to target any content on the web. The `rating` record uses the standard `com.atproto.repo.strongRef` `subject` field because it *must* target a `label` record, which always exists within the AT Protocol. Support for external content is achieved by making the top-level `cid` field in the `label` record optional.
+* **Recursive Dispute Mechanism:** The protocol supports disputes by reusing the `label` record to target proposals. This elegant, recursive design keeps the lexicon simple while enabling complex moderation dialogues.
 * **Precedent from Existing Systems:** The values for `reason` (when `val` is `"needs-context"`) and the `reasons` for ratings are adapted from X's Community Notes to build on a proven model.
 * **Parametric vs. Non-Parametric Labels:** The design distinguishes between labels that require `note` (like `needs-context` labels) and those that don't (like `spam`) by keeping the `note` field optional.
 * **Embedded Sources:** To allow for multiple references, all source links are embedded directly within the optional `note` field.

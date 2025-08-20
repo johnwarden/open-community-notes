@@ -1,6 +1,6 @@
 {
     "lexicon": 1,
-    "id": "org.opencommunitynotes.label",
+    "id": "social.pmsky.label",
     "defs": {
         "main": {
             "type": "record",

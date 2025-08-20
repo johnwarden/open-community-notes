@@ -1,6 +1,6 @@
 {
     "lexicon": 1,
-    "id": "org.opencommunitynotes.proposal",
+    "id": "social.pmsky.proposal",
     "defs": {
         "main": {
             "type": "record",
@@ -22,7 +22,7 @@
                     },
                     "typ": {
                         "type": "string",
-                        "description": "The type of moderation action being proposed. Currently expected values are 'allowed_user' or 'post_label'"
+                        "description": "The type of moderation action being proposed. Currently expected values are 'allowed_user' or 'label'"
                     },
                     "src": {
                         "type": "string",
@@ -42,11 +42,11 @@
                     "val": {
                         "type": "string",
                         "maxLength": 128,
-                        "description": "For 'post_label' proposals, the short string name of the value of the proposed label."
+                        "description": "For 'label' proposals, the short string name of the value of the proposed label."
                     },
                     "note": {
                         "type": "string",
-                        "description": "For 'post_label' proposals where 'val' is 'needs-context', the full text of any proposed annotation (e.g. community note) to be shown below the post."
+                        "description": "For 'label' proposals where 'val' is 'needs-context', the full text of any proposed annotation (e.g. community note) to be shown below the post."
                     },
                     "reasons": {
                         "type": "array",
