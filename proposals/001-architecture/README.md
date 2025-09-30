@@ -24,7 +24,7 @@ This Open Community Notes wouldn't be limited to Bluesky and other AT Protocol a
 
 ### Generalized Moderation
 
-A generalized community moderation protocol could use the same algorithm that Community Notes uses for identifying helpful *notes* for identifying helpful **labels with notes**. A classic Community Note would be a `needs-context` label along with a note. But the algorithm could also be used for `harassment` or other labels, with optional notes explaining the reason for the label.
+A generalized community moderation protocol could use the same algorithm that Community Notes uses for identifying helpful *notes* for identifying helpful **labels with notes**. A classic Community Note would be a `annotation` label along with a note. But the algorithm could also be used for `harassment` or other labels, with optional notes explaining the reason for the label.
 
 ## High-Level Architecture
 
@@ -38,7 +38,7 @@ A user interface for proposing notes, browsing notes that need ratings, and voti
 
 Provides API endpoints for reading and writing notes and ratings. Publishes signed note and ratings records using an **Anonymous IDs** kept separate from users' public profiles. See [Anonymous IDs](#anonymous-ids) below.
 
-Also serves as a **labeler**, publishing `needs-context` and other labels, with the helpful note included in the label.
+Also serves as a **labeler**, publishing community notes labels, with the helpful note included in the label.
 
 ### **Community Notes Aggregator**
 
@@ -46,7 +46,7 @@ Runs the Community Notes algorithm to score notes and produce rater impact score
 
 ### Integrated Social Apps
 
-Apps like Bluesky can use display notes under posts that have a `needs-context` label. Since the labeler is a web services, even non-AT Protocol apps like Mastodon can integrate them.
+Apps like Bluesky can use display notes under posts that have a community notes label. Since the labeler is a web services, even non-AT Protocol apps like Mastodon can integrate them.
 
 Apps can either build Community Notes features directly into their interface or direct users to an external app for writing and rating notes.
 
@@ -58,7 +58,7 @@ So, a generalized Community Notes protocol would be used to add labels to posts,
 
 ### "Needs Context” Labels
 
-AT Protocol [moderation services](https://docs.bsky.app/docs/advanced-guides/moderation) can currently be used to add `misinformation` labels to posts. But we suggest that a [more appropriate general label](https://github.com/bluesky-social/social-app/issues/5783#issuecomment-2547443254) for posts with helpful notes would be [`needs-context`]([https://github.com/bluesky-social/social-app/issues/5783#issuecomment-2547443254]\(https://github.com/bluesky-social/social-app/issues/5783#issuecomment-2547443254\)).
+AT Protocol [moderation services](https://docs.bsky.app/docs/advanced-guides/moderation) can currently be used to add `misinformation` labels to posts. But we suggest that a [more appropriate general label](https://github.com/bluesky-social/social-app/issues/5783#issuecomment-2547443254) for posts with helpful notes would be [`annotation`]([https://github.com/bluesky-social/social-app/issues/5783#issuecomment-2547443254]\(https://github.com/bluesky-social/social-app/issues/5783#issuecomment-2547443254\)).
 
 ### "Rate Proposed Community Notes" Labels
 

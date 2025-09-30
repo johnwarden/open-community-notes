@@ -1,6 +1,6 @@
 # Proposal: Open Community Notes Lexicon
 
-Open Community Notes uses the [social.pmsky lexicon](https://github.com/pmsky-social/app/blob/main/lexicons). The Drew McArthur, the maintainer of (pmsky)[https://pmsky.social/) lexicon has kindly expanded the lexicon to meet our requirements.
+Open Community Notes uses the [social.pmsky lexicon](https://docs.pmsky.social/tech/lexicon). The Drew McArthur, the maintainer of (pmsky)[https://pmsky.social/) lexicon has kindly expanded the lexicon to meet our requirements.
 
 - `social.pmsky.proposal`: For proposing a moderation action (e.g. adding a label w/ note to a post).
 - `social.pmsky.vote`: For approving or disapproving of proposals.
@@ -8,6 +8,8 @@ Open Community Notes uses the [social.pmsky lexicon](https://github.com/pmsky-so
 ## 2. Proposal Record (`social.pmsky.proposal`)
 
 ### 2.1. Spec
+
+[https://github.com/pmsky-social/app/blob/main/lexicons/proposal.json](https://github.com/pmsky-social/app/blob/main/lexicons/proposal.json)
 
 | Field Name | Type | Required | Description |
 | :--- | :--- | :--- | :--- |
@@ -17,11 +19,10 @@ Open Community Notes uses the [social.pmsky lexicon](https://github.com/pmsky-so
 | `uri` | `string` (uri) | Yes | AT URI of the resource that this proposal applies to. |
 | `cid` | `string` (cid) | No | Optionally, CID specifying the specific version of 'uri' resource. |
 | `val` | `string` | Yes | The short string name of the value of the proposed label. |
-| `note` | `string` | No | For 'needs-context' labels, the full text of the proposed annotation. |
+| `note` | `string` | No | The full text of an proposed annotation. |
 | `reasons`| `string[]` | No | An optional array of predefined reasons justifying the moderation action. |
 | `aid` | `string` | No | The persistent, anonymous identifier for the user creating the proposal. |
 | `cts` | `string` (datetime)| Yes | Timestamp when this proposal was created. |
-| `exp` | `string` (datetime)| No | Timestamp at which this proposal expires. |
 | `sig` | `bytes` | No | Signature of dag-cbor encoded proposal. |
 
 ### 2.2. Defined Values for `reasons`
@@ -37,13 +38,14 @@ Open Community Notes uses the [social.pmsky lexicon](https://github.com/pmsky-so
 | `other` |
 
 ### 2.3. Example JSON
+
 ```json
 {
   "$type": "social.pmsky.proposal",
   "typ": "label",
   "src": "did:plc:communitynotesservice",
   "uri": "at://did:plc:xxxxxxxxxxxx/app.bsky.feed.post/3kabc123xyz",
-  "val": "needs-context",
+  "val": "note",
   "note": "This photo was taken in 2015, not during the recent events.",
   "reasons": ["outdated_information"],
   "aid": "anon:ab34fec9de56",
@@ -52,6 +54,9 @@ Open Community Notes uses the [social.pmsky lexicon](https://github.com/pmsky-so
 ```
 
 ## 3. Vote Record (`social.pmsky.vote`)
+
+[https://github.com/pmsky-social/app/blob/main/lexicons/vote.json](https://github.com/pmsky-social/app/blob/main/lexicons/vote.json)
+
 
 ### 3.1. Spec
 
@@ -84,7 +89,8 @@ Open Community Notes uses the [social.pmsky lexicon](https://github.com/pmsky-so
 | `is_argumentative_or_biased` |
 | `note_not_needed` |
 | `is_spam_harassment_or_abuse` |
-| `other` |
+| `helpful_other` |
+| `not_helpful_other` |
 
 ### 3.3. Example JSON
 ```json
@@ -136,9 +142,9 @@ This creates a chain of context that can be algorithmically scored and presented
 
 * **Lexicon Compatibility:** This lexicon is a superset of the social.pmsky lexicon to maximize potential interoperability. And in that lexicon, the `label` record identical to `com.atproto.label.defs#label`but as a concrete record type. This allows standard clients to process these records by ignoring the extra fields (`reason`, `note`, `aid`).
 * **Generality:** Works not just for Notes, and not just for labels, but for moderation actions in general.
+* **Optional Note Field:** A label with a note field is a note. Some types of labels can require a note, others don'.t
 * **Flexible Subject Fields:** The `proposal` record uses top-level `uri` and optional `cid` fields to target any content on the web. The `rating` record uses the standard `com.atproto.repo.strongRef` `subject` field because it *must* target a `label` record, which always exists within the AT Protocol. Support for external content is achieved by making the top-level `cid` field in the `label` record optional.
 * **Recursive Dispute Mechanism:** The protocol supports disputes by reusing the `label` record to target proposals. This elegant, recursive design keeps the lexicon simple while enabling complex moderation dialogues.
-* **Precedent from Existing Systems:** The values for `reason` (when `val` is `"needs-context"`) and the `reasons` for ratings are adapted from X's Community Notes to build on a proven model.
-* **Parametric vs. Non-Parametric Labels:** The design distinguishes between labels that require `note` (like `needs-context` labels) and those that don't (like `spam`) by keeping the `note` field optional.
+* **Precedent from Existing Systems:** The values for `reason` and the `reasons` for ratings are adapted from X's Community Notes to build on a proven model.
 * **Embedded Sources:** To allow for multiple references, all source links are embedded directly within the optional `note` field.
 * **Anonymity:** The `aid` field allows a single service account to sign all records but include anonymous IDs so that the Community Notes algorithm can be run transparently
