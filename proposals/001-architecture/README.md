@@ -16,7 +16,7 @@ We propose closely mirroring X's Community Notes implementation, using their ope
 
 ### Based on AT Protocol
 
-We propose building the Open Community Notes protocol on top of [AT Protocol](https://en.wikipedia.org/wiki/AT_Protocol). AT Protocol supports different [**social modes**](https://bsky.social/about/bluesky-and-the-at-protocol-usable-decentralized-social-media-martin-kleppmann.pdf), beyond just the microblogging mode used by the Bluesky app. By defining a new AT Protocol [Custom Schema](https://docs.bsky.app/docs/advanced-guides/custom-schemas), Open Community Notes can use AT Protocol as an open **store for notes and ratings**. Community Notes **apps** would allow users to browse, propose, and rate notes. And an independent Community Notes **scoring service** and [**labeler**](https://atproto.com/specs/label) would be implemented as an [App View](https://docs.bsky.app/docs/advanced-guides/federation-architecture#app-views), allowing Bluesky and others to easily display helpful Community Notes in their apps.
+We propose building the Open Community Notes protocol on top of [AT Protocol](https://en.wikipedia.org/wiki/AT_Protocol). AT Protocol supports different [**social modes**](https://bsky.social/about/bluesky-and-the-at-protocol-usable-decentralized-social-media-martin-kleppmann.pdf), beyond just the microblogging mode used by the Bluesky app. Using a [Custom Schema](https://docs.bsky.app/docs/advanced-guides/custom-schemas), Open Community Notes can use AT Protocol as an open **store for notes and ratings**. Community Notes **apps** would allow users to browse, propose, and rate notes. And an independent Community Notes **service** would be implemented as an [App View](https://docs.bsky.app/docs/advanced-guides/federation-architecture#app-views), allowing Bluesky and others to easily display helpful Community Notes in their apps.
 
 ### Multi-Platform
 
@@ -36,9 +36,9 @@ A user interface for proposing notes, browsing notes that need ratings, and voti
 
 ### **Community Notes Service**
 
-Provides API endpoints for reading and writing notes and ratings. Publishes signed note and ratings records using an **Anonymous IDs** kept separate from users' public profiles. See [Anonymous IDs](#anonymous-ids) below.
+Provides API endpoints for proposing and voting on notes. Publishes signed note and ratings records using an **Anonymous IDs** kept separate from users' public profiles. See the [Anonymous IDs proposal](/proposals/003-aids).
 
-Also serves as a **labeler**, publishing community notes labels, with the helpful note included in the label.
+The service would also implement the ATProto Labeler API, publishing community notes labels..
 
 ### **Community Notes Aggregator**
 
@@ -56,19 +56,17 @@ Community Notes allows members of the community to add context to posts. However
 
 So, a generalized Community Notes protocol would be used to add labels to posts, along with notes/reasons for those labels.
 
-### "Needs Context” Labels
+### Labels with Notes
 
-AT Protocol [moderation services](https://docs.bsky.app/docs/advanced-guides/moderation) can currently be used to add `misinformation` labels to posts. But we suggest that a [more appropriate general label](https://github.com/bluesky-social/social-app/issues/5783#issuecomment-2547443254) for posts with helpful notes would be [`annotation`]([https://github.com/bluesky-social/social-app/issues/5783#issuecomment-2547443254]\(https://github.com/bluesky-social/social-app/issues/5783#issuecomment-2547443254\)).
+A Community Note can just be thought of as an ATProto `annotation` label with an additional `note` field with the text of the note. Community Notes-enabled apps can display these labels as community notes when it sees them.
 
-### "Rate Proposed Community Notes" Labels
+X's Community Notes also places a "Rate Proposed Community Notes" notice below posts that have notes that have not yet been rated as helpful/unhelpful. Community-notes enabled apps can also display these prompts for posts with a `proposed-annotation` label.
 
-X's Community Notes also places a "Rate Proposed Community Notes" notice below posts that have notes that need ratings. A Community Notes Labeler could also publish `rate-proposed-community-notes` labels, and social apps could send user to the Community Notes UI when they click on these labels.
+See the proposed [Labeling Architecture](/proposals/004-labeling) for more details.
 
 ### Adding Reasons to Labels
 
-A moderation service that publishes labels such as `scam` might sometimes want to include an explanation for why the post is a scam. So in general, a note can be considered as a *reason for a label.*
-
-A [com.atproto.label](https://github.com/bluesky-social/atproto/tree/main/lexicons/com/atproto/label) can include additional metadata such as a note URI. So moderation services, including the Community Notes Scoring Service, could optionally publish notes with any label.
+A moderation service that publishes labels such as `scam` might sometimes want to include an explanation for why the post is a scam. So in general, a note can be considered as a *reason for a label.* So moderation services, including the Community Notes Scoring Service, could optionally publish notes with any label.
 
 ## Challenges
 
@@ -104,16 +102,3 @@ X uses various methods of defending against manipulation.
 
 * Organizations building the first Open Community Notes apps could similarly implement a controlled rollout, seeking to attract a diverse foundation of trustworthy early users.
 
-## Anonymous IDs
-
-Note and rating records would include an additional **anonymous ID** field associated with the user ID. These IDs would be prefixed with a string identifying the PDS (e.g. "communitynotes.bsky.app:5684B38EB5…") to guarantee uniqueness. This prefix would be associated with the domain of the DID of the PDS that signs the transaction. This way the Community Notes PDS can prove its authority to sign transactions for its own anonymous IDs, preventing other PDSs from (maliciously) submitting ratings for X Community Notes users.
-
-A more involved system could permit portability (e.g. allow X users to port their anonymous ID to a different Community Notes app). Future research could explore cryptographic solutions that enable users to switch between pseudonymous identity providers.
-
-## Reporting Workflow
-
-Currently, users of Bluesky and other apps can submit anonymous **moderation reports** to a moderation service. These reports can include a reason “e.g. misleading content or spam” and an optional detailed description. Each moderation service determines what to do with these reports.
-
-If a Community Notes App implemented the moderation service [API for submitting reports](https://docs.bsky.app/docs/api/com-atproto-moderation-create-report), then these reports could be automatically converted into notes. However, it is likely that many moderation reports are low quality. Further, only users who have received a minimum rating impact score and have provided the required proof of work should be allowed to submit notes (see the Manipulation section above).
-
-So instead, we suggest that a Community Notes App could use moderation reports to help users identify posts that may need notes.
