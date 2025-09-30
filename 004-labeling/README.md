@@ -1,4 +1,4 @@
-# Proposal: Community Notes Labeling Architecture
+# Open Community Notes Labeling Architecture
 
 The Community Notes app will piggyback on Bluesky labelers for displaying helpful proposals, as well as the "rate proposed community notes" prompts.
 
