@@ -1,4 +1,4 @@
-# Proposal: Anonymous ID (AID) Specification
+# Open Community Notes Anonymous ID (AID) Specification
 
 This document describes the Anonymous ID (AID) system for the Community Notes service, including generation, validation, and security properties.
 
