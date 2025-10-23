@@ -1,6 +1,6 @@
 # Open Community Notes Lexicon
 
-Open Community Notes uses the [social.pmsky lexicon](https://docs.pmsky.social/tech/lexicon). Drew McArthur, the maintainer of (pmsky)[https://pmsky.social/) lexicon has kindly expanded the lexicon to meet our requirements.
+Open Community Notes uses the [social.pmsky lexicon](https://docs.pmsky.social/tech/lexicon). Drew McArthur, the maintainer of [pmsky][https://pmsky.social/) lexicon has kindly expanded the lexicon to meet our requirements.
 
 - `social.pmsky.proposal`: For proposing a moderation action (e.g. adding a label w/ note to a post).
 - `social.pmsky.vote`: For approving or disapproving of proposals.
