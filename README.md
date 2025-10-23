@@ -1,6 +1,6 @@
-# The Open Community Notes Protocol
+# The Open Community Notes Standard
 
-This repository contains proposals and specs for an open Community Notes protocol on top of AT Protocol. 
+This repository contains proposals and specs for an open Community Notes standard based on AT Protocol. 
 
 ## How to Contribute
 
@@ -38,7 +38,7 @@ This Open Community Notes wouldn't be limited to Bluesky and other AT Protocol a
 
 A generalized community moderation protocol could use the same algorithm that Community Notes uses for identifying helpful *notes* for identifying helpful **labels with notes**. A classic Community Note would be a `annotation` label along with a note. But the algorithm could also be used for `harassment` or other labels, with optional notes explaining the reason for the label.
 
-The lexicon for (PMsky)[https://pmsky.social/) was built on this idea of generalized community moderation. Open Community Notes uses the [social.pmsky lexicon](https://docs.pmsky.social/tech/lexicon).
+The lexicon for [PMsky](https://pmsky.social/) was built on this idea of generalized community moderation. Open Community Notes uses the [social.pmsky lexicon](https://docs.pmsky.social/tech/lexicon).
 
 ## High-Level Architecture
 
