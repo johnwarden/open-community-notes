@@ -1,185 +1,203 @@
-# The Open Community Notes Standard
+# Open Community Notes
 
-**Version:** 0.1.0 (Draft)  
+**Version:** 0.1.1 (Draft)  
 **Status:** Proposal
 
-This repository contains proposals and specifications for an open, interoperable Community Notes standard. The standard defines interfaces and data structures for collaborative content annotation and moderation that can work across social networks and platforms.
+This repository contains draft specifications for an open, interoperable Community Notes protocol.
+
+The goal is to define a shared data model and service interfaces for proposing, rating, scoring, and serving community-authored annotations about online content. The protocol is intended to support Community Notes–style systems across multiple social networks and applications, while allowing different services to experiment with scoring, trust, and anti-abuse mechanisms.
+
+At a high level, the proposal separates:
+
+- **Public record storage** for note proposals and ratings
+- **Submission services** that accept contributions and apply eligibility, anti-abuse, and privacy controls
+- **Scoring services** that compute note scores or publication decisions
+- **App views** that serve hydrated proposals and published annotations to applications
+
+This repository is an early draft. It does **not** yet define every aspect of a complete production-ready protocol. In particular, privacy, contributor eligibility, anti-manipulation protections, and some annotation-serving details remain active design areas.
 
 ## Quick Links
 
 - [Overview](#overview)
-- [Glossary](#glossary)
-- [Architecture](#high-level-architecture)
-- [Challenges](#challenges)
+- [Architecture](#architecture)
+- [Design Features](#design-features)
+- [Lexicon](#lexicon)
+- [Architecture Challenges](#architecture-challenges)
 - [How to Contribute](#how-to-contribute)
 
-## How to Contribute
+## Overview
 
-Your involvement is highly encouraged! Feel free to:
+The proposal aims to support a Community Notes system that is:
 
-- Open an issue to discuss suggestions, concerns, or ideas.
-- Submit pull requests with improvements, edits, or clarifications.
-- Share feedback or engage in ongoing discussions via issues or discussions.
+1. **Open with credible exit.**  
+   Note proposals and ratings live in an open network rather than inside a closed platform database. This allows anyone to inspect the underlying records, verify a service’s published outputs, or build alternative services on top of the same public data.
 
-## License
+2. **Cross-platform.**  
+   The protocol is designed to support annotations on any content that can be identified by a URI, including posts on AT Protocol and ActivityPub networks, as well as content from more centralized platforms.
 
-All content in this repository is licensed under the [MIT License](LICENSE), encouraging widespread collaboration and adoption. Contributors agree that their contributions may be incorporated under this license.
+3. **Extensible beyond Community Notes.**  
+   The same protocol can support broader community moderation workflows. A “note” is one kind of community-authored annotation; the same structure can also support labels or moderation actions such as `scam`, `harassment`, or `misleading`.
 
-# Overview 
+The proposal is inspired by Community Notes as deployed on X, but it is not limited to reproducing X’s exact system. Different services may adopt different scoring algorithms, trust models, contributor policies, and moderation policies while still interoperating at the record and interface layer.
 
-The vision is a version of X's Community Notes that:
+## What This Proposal Standardizes
 
-1. Is [**open with credible exit**](https://perma.cc/LC9R-Q6JY). Although Community Notes requires some [*architectural centralization*](https://medium.com/@VitalikButerin/the-meaning-of-decentralization-a0c92b76a274)—some entity must run the Community Notes algorithm on the full dataset—all notes and ratings can live in an open network. This enables anyone to independently verify the algorithm’s output or run their own service.
+This proposal is intended to standardize:
 
-2. Could be used by any social network—from federated networks like AT Protocol and ActivityPub, to TikTok and even X itself.
+- The record types used for note proposals, ratings, and related moderation data
+- The interface between submission services, scoring services, app views, and applications
+- The representation of published annotations and related moderation outputs
+- The use of an open network as the underlying persistence layer
 
-3. Can be used as a general standard for community moderation.
+This proposal does **not** require all services to use the same:
 
-Implementing features like **anonymity, bots protection, and manipulation resistance** in an open, federated standard presents unique challenges compared to centralized systems. See the [Challenges](#challenges) section below for discussion of these issues.
+- scoring algorithm
+- contributor onboarding policy
+- anti-abuse mechanism
+- privacy mechanism
 
-### Based on ATProto
+Those choices are intentionally left open, provided that services remain compatible with the shared record and interface layer.
 
-The Open Community Notes standard is build on [AT Protocol](https://en.wikipedia.org/wiki/AT_Protocol). Using a custom lexicon, Open Community Notes leverages AT Protocol as an open, federated **data store for notes and ratings**. 
+## AT Protocol as the Initial Data Layer
 
-Note and rating records are stored in the PDS of a service account associated with each Community Notes Service, ensuring data persistence and independent verifiability.
+This draft uses [AT Protocol](https://en.wikipedia.org/wiki/AT_Protocol) as its initial underlying data layer.
 
-### Beyond ATProto
+Using a custom lexicon, Open Community Notes stores note proposals and ratings as AT Protocol records. In the current design, those records are written to the PDS of a service account associated with a submission service.
 
-While using ATProto as a data layer, the standard is designed to be platform-agnostic in principle. The Community Notes Service can accept and serve notes for **any content identifiable by a URI** (such as a Tweet, Mastodon post, TikTok video, or web page). 
-
-### Generalized Moderation
-
-The standard's scope extends beyond community notes. Services can use the same algorithms for making decisions about *any* moderation label (e.g., `scam`, `harassment`, `misinformation`). A note is just an explanation of the reason for a label.
-
-Open Community Notes builds off of the [PMsky](https://pmsky.social/) [custom lexicon](https://docs.pmsky.social/tech/lexicon), which was desiged for generalized community moderation. 
-
-## High-Level Architecture
+## Architecture
 
 ![open-community-notes.png](open-community-notes.png)
 
-The architecture follows ATProto's **stackable moderation** approach: multiple Community Notes Services can coexist, each implementing their own algorithms and policies. Users and apps choose which services to use.
+### Roles
 
-### **Community Notes App(s)**
+- **Social Apps**  
+  Display published annotations and moderation labels alongside content.
 
-User-facing interfaces that allow contributors to:
-- Propose new notes on content
-- Browse notes that need ratings
-- Rate existing notes as helpful or unhelpful
-- View their contributor rating impact score (if the service provides this)
+- **Moderation Apps**  
+  Provide interfaces for proposing notes and rating proposed notes.
 
-These apps interface with one or more Community Notes Services to submit notes and ratings, and retrieve helpful notes.
+- **Submission Services**  
+  Accept proposal and vote submissions, enforce eligibility and anti-abuse controls, and may pseudonymize submitted records before writing them to the open data layer.
 
-### **Community Notes Service**
+- **Scoring Services**  
+  Read proposals and votes from the open data layer, run scoring algorithms, and produce scores or publication decisions.
 
-Each service is an independent operator that:
-- Provides API endpoints for proposing notes and submitting ratings
-- Manages **Anonymous IDs (AIDs)** that keep the link between contributors' public profiles and their note/rating activity private (see [Anonymous IDs proposal](/003-aids#readme))
-- Stores note and rating records as ATProto records in the PDS of its service account
-- Runs a ranking algorithm (e.g., X's bridging-based algorithm, or alternatives) to determine which notes are helpful
-- Implements the ATProto Labeler API to publish community notes as labels (see [Labeling Architecture](/004-labeling#readme))
-- Enforces access controls, rate limits, and quality standards
+- **App Views**  
+  Serve hydrated proposals and published annotations to apps through query endpoints and labeler or annotation APIs.
 
-**Algorithm Freedom:** The standard does not mandate a specific ranking algorithm. Services may use X's open-source Community Notes algorithm, implement variations, or create entirely different approaches. This allows for experimentation and evolution.
+## Design Features
 
-**Independent Verification:** Since note and rating records are public ATProto records, anyone can verify a service's outputs or run alternative analyses on the same data.
+**Open Records**  
+Note proposals and ratings are stored as public records, enabling independent inspection and verification.
 
-### **Integrated Social Apps**
+**Algorithm Freedom**  
+Services may use X’s open-source Community Notes scoring algorithm, variations of it, or entirely different scoring approaches.
 
-Social media applications (Bluesky, Mastodon, etc.) that:
-- Subscribe to one or more Community Notes labeling services
-- Display helpful community notes beneath relevant posts
-- Show "Rate this note" prompts for posts with proposed notes needing ratings
-- Optionally integrate note writing/rating directly in their UI, or link to a Community Notes App
+**Independent Verification**  
+Because the underlying proposal and rating records are public, anyone can verify a service’s outputs or run alternative analyses over the same data.
 
-Apps can choose which services to trust and display, giving users control over their moderation experience.
+**Interoperable Moderation Inputs**  
+Moderation tools are independent of scoring services. Multiple moderation apps can produce proposals and votes that can be consumed by one or more scoring services.
 
-## Implementation Details
+**Generalized Moderation**  
+The protocol is not limited to explanatory notes. It can support broader community moderation actions, labels, and annotations.
 
-### Labels with Notes
+**Cross-Protocol Scope**  
+Although this draft uses AT Protocol as its initial data layer, the target use case is broader: community-authored annotations for any URI-addressable content.
 
-Technically, a Community Note is an ATProto `annotation` label with an associated `note` field containing the explanatory text. When Community Notes-enabled apps see an `annotation` label on a post, they display it as a community note.
 
-For proposed notes that haven't yet been rated as helpful or unhelpful, the system uses a `proposed-annotation` label. Apps can display "Rate this note" prompts for posts with this label, similar to how X's Community Notes works.
+## Lexicon
 
-See the proposed [Labeling Architecture](/004-labeling#readme) for detailed specifications.
+Open Community Notes builds on the [PMsky](https://pmsky.social/) [custom lexicon](https://docs.pmsky.social/tech/lexicon), which was designed for generalized community moderation. See the [Lexicon specification](/002-lexicon#readme).
 
-### Extending to Other Label Types
+## Architecture Challenges
 
-Any label type can optionally include an associated note. For example:
-- A `scam` label might include a note explaining why the content is deceptive
-- A `harassment` label might include context about why the content violates policies
-- A `misinformation` label might include fact-checking information and sources
+The main architectural challenge is to combine **open records and interoperable interfaces** with properties that Community Notes systems usually rely on in more centralized deployments, especially privacy, abuse resistance, and strong incentives for honest participation.
 
-This allows the standard to support a wide range of community-driven moderation use cases beyond simple annotations.
+### Annotations
 
-## Challenges
+A Community Note can be understood as a type of **annotation**: information attached to a record by someone other than the record creator, and potentially displayed alongside that record.
 
-### Anonymity
+This proposal assumes that a more general AT Protocol annotation mechanism will eventually exist. When such a mechanism is available, this draft should align with it.
 
-X's Community Notes preserves contributor anonymity to prevent retaliation and gaming. Each contributor receives an Anonymous ID (AID), and while their notes and ratings are publicly visible, X doesn't publish information linking AIDs to X handles.
+In the meantime, helpful community notes can be published as labels, while applications make an additional call to an app view to fetch note content and related metadata.
 
-**Approach:** Each Community Notes Service manages AIDs and keeps the mapping between AIDs and users' public accounts confidential. See the [Anonymous IDs proposal](/003-aids#readme) for detailed specification of approaches including blind signatures, zero-knowledge proofs, and trusted hardware.
+See [Labeling Architecture](/004-labeling#readme).
 
-**Tradeoffs:**
-- Contributors must trust the service operator to protect the AID-to-identity mapping
-- The AID mapping is a high-value target for attackers; requires strong security practices
-- Anonymity must be balanced with legal requirements (e.g., DMCA, illegal content)
-- Perfect anonymity may enable abuse; accountability may discourage honest participation
+### Privacy and Pseudonymity
 
-Services can implement different points on this tradeoff spectrum based on their policies and user base.
+Community Notes systems benefit from some degree of contributor privacy. Publicly linking every note and rating to a contributor’s primary social identity can increase retaliation, social pressure, and strategic behavior.
 
-### Manipulation and Bots
+A common approach is to allow contributors to act through stable pseudonymous identifiers rather than through their public account identity. In this model, a submission service manages the mapping between user identities and pseudonymous contributor identifiers, while only the pseudonymous identifiers appear in public note and rating records.
 
-Ranking algorithms (such as the bridging-based algorithm used by X) can have inherent resistance to coordinated manipulation. However, no algorithm is manipulation-proof—a sufficiently large coordinated attack with many bot accounts can overwhelm any system.
+**Tradeoffs include:**
 
-**Potential Defense Strategies (Service-Dependent):**
+- contributors may need to trust the service operator not to expose identity mappings
+- identity mappings become sensitive infrastructure and high-value targets
+- stronger privacy can make abuse investigation more difficult
+- weaker privacy can discourage honest participation or make coordinated retaliation easier
 
-Services can implement various combinations of defenses:
+Different services may choose different points in this design space.
 
-**1. Proof of Personhood**
-- Telephone number requirements (as X uses)
-- Email verification
-- **Alternative: Proof of Work** for new contributors (see [Anubis](https://anubis.techaro.lol)) - legitimate users complete trivial computation; Sybil attacks become expensive
+See the [Anonymous IDs proposal](/003-aids#readme).
 
-**2. Delayed Publishing**
-- Delaying publication of ratings prevents copying behavior and makes coordination harder
+### Manipulation Resistance and Bots
 
-**3. Rating Impact / Reputation Scores**
-- Contributors earn reputation based on rating quality
-- New contributors must build reputation before gaining full privileges
-- Attackers must spend time and effort building reputation
+No scoring algorithm is fully manipulation-proof. Community Notes systems can be resistant to some forms of coordinated behavior, but sufficiently large or well-resourced attacks can still distort outcomes.
 
-**4. Trusted Core Contributors**
-- X Community Notes began with a carefully selected group of diverse, good-faith early adopters who established norms
-- Controlled rollout allows community culture to form before facing widespread manipulation attempts
+For that reason, abuse resistance cannot be treated as purely an algorithmic problem. Submission services may need to combine scoring with contribution controls and operational defenses.
+
+Possible defense mechanisms include:
+
+- contributor eligibility requirements such as phone or email verification
+- proof-of-work or similar cost imposition for new contributors
+- delayed publication of ratings to make coordination and copying harder
+- reputation or rating-impact systems that limit the influence of new or low-quality contributors
+- staged rollout to a smaller, trusted, and diverse initial contributor base
+
+These mechanisms are service-dependent and may vary substantially across deployments.
 
 ### Adoption and Network Effects
 
-The value of community notes increases with:
-- **Number of contributors:** More contributors means faster coverage of noteworthy content
-- **Quality and diversity of contributors:** Cross-ideological agreement requires diverse perspectives
-- **Platform integration:** More platforms displaying notes increases incentive to contribute
+Community Notes systems become more valuable as they gain more contributors, broader content coverage, and wider display across applications.
 
-**Challenges:**
-- **Cold start problem:** Initially, few notes will be rated, making the service less useful
-- **Platform adoption:** Convincing platforms to integrate requires demonstrating value
-- **Contributor incentives:** What motivates people to participate, especially early on?
+This creates several bootstrapping challenges:
 
-**Mitigation strategies:**
-- Start with a focused community (e.g., Bluesky users) where trust and shared norms exist
-- Partner with platforms that already value community moderation
-- Consider future incentive mechanisms (reputation, governance rights, etc.)
-- Make the standard so easy to integrate that the cost of trying it is minimal
+- **cold start:** a new system may have too few contributors or ratings to produce useful outputs
+- **display adoption:** platforms may hesitate to integrate a system before it demonstrates value
+- **contributor incentives:** people need reasons to contribute high-quality notes and ratings, especially early on
 
-### Data Storage Credible Exit
+Possible mitigation strategies include starting with a focused community, targeting integrations where community moderation is already valued, and making integration simple enough that experimenting with the protocol is low-cost.
 
-**Where is data stored?**
-- Note and rating records are stored as ATProto records in the PDS of each service's service account
-- These records are publicly accessible ATProto records, enabling transparency and independent verification
-- The AID-to-identity mapping is kept private by the service
+### Credible Exit and Trust
 
-**What happens if a service goes offline?**
-- Notes and ratings persist in ATProto data repositories (PDSs) even if the service operator stops running
-- Since records are public, anyone can retrieve the data and verify outputs
-- Alternative services can emerge using different algorithms on the same or new datasets
-- Apps can switch to alternative services
+A central design goal of this proposal is **credible exit**: continued operation of the protocol even if a particular service becomes unavailable or untrusted.
+
+Different service roles provide different degrees of replaceability and verifiability.
+
+**App Views** 
+App views, including labelers, serve derived outputs based on data from submission and scoring services. Although users and apps must trust them, their outputs are publicly inspectable and can be recomputed by others, so they are relatively easy to replace.
+
+**Scoring Services**  
+Scoring services compute scores or publication decisions from publicly available proposal and rating data. Their outputs are verifiable: other parties can inspect the inputs and rerun the scoring logic.
+
+**Submission Services**  
+Submission services require the most trust. They control contribution intake, eligibility checks, anti-abuse measures, and pseudonymous identity assignment. Some aspects of their behavior are externally visible, but others are difficult or impossible to verify from public records alone. For example, outsiders cannot fully verify that a submission service is enforcing its stated anti-manipulation policies, nor can they rule out the possibility that the service itself is generating fraudulent submissions.
+
+If a submission service goes offline, its publicly stored proposals and ratings remain available for inspection, analysis, and reuse. However, contributors may not be able to carry their pseudonymous identity, reputation, or service-specific privileges to a successor service.
+
+## How to Contribute
+
+Contributions and criticism are welcome.
+
+You can help by:
+
+- opening issues to discuss architecture, terminology, or tradeoffs
+- submitting pull requests with edits or clarifications
+- contributing alternative designs, implementation notes, or threat-model analysis
+
+## License
+
+All content in this repository is licensed under the [MIT License](LICENSE).
+
+
