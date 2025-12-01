@@ -1,13 +1,13 @@
 # Open Community Notes Labeling Architecture
 
-The Community Notes app will piggyback on Bluesky labelers for displaying helpful proposals, as well as the "rate proposed community notes" prompts.
+The Community Notes app will piggyback on Bluesky labelers for displaying community notes.
 
 ## Community-Notes-Enabled Social Apps
 
 Community-Notes-Enabled Social Apps will:
 
 - Display helpful community notes below posts
-- Show "rate proposed community notes" prompts below proposals that need ratings
+- Show "rate proposed community notes" prompts below proposed notes that need ratings
 - Have a "Write a Community Note" menu option
 
 These apps should be able to use existing Bluesky App Views and PDSs. To find posts with helpful notes or notes needing ratings, the app view will rely on labels.

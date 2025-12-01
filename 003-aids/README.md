@@ -6,6 +6,10 @@ This document describes the Anonymous ID (AID) system for the Community Notes se
 
 Anonymous IDs (AIDs) are pseudonymous identifiers that allow users to create and rate Community Notes while maintaining privacy. AIDs are generated deterministically from user DIDs using the service's private key as a secret salt.
 
+Proposal (note) and vote records are associated with DID and PDS of the community notes services. They are not directly associated with the contributor's DID or stored in the contributor's PDS. 
+
+Each record has an AID field, since a unique ID for each contributor is necessary for the community notes algorithm. However, the AID field "anonymizes" the user. Without the secret salt, it is difficult to recover a DID given an AID.
+
 ## AID Format
 
 24-character base32-encoded strings (like PLC DIDs), representing the first 120 bits of a SHA256 hash.
