@@ -118,11 +118,9 @@ The main architectural challenge is to combine **open records and interoperable 
 
 A Community Note can be understood as a type of **annotation**: information attached to a record by someone other than the record creator, and potentially displayed alongside that record.
 
-This proposal assumes that a more general AT Protocol annotation mechanism will eventually exist. When such a mechanism is available, this draft should align with it.
+This proposal assumes that a more general AT Protocol annotation mechanism will eventually exist. A draft spec for using labelers as annotators is proposed [here](/005-annotations). Whatever mechanism is adopted by the ATProto community, this draft should align with it.
 
-In the meantime, helpful community notes can be published as labels, while applications make an additional call to an app view to fetch note content and related metadata.
-
-See [Labeling Architecture](/004-labeling#readme).
+In the meantime, helpful community notes can be published as labels, while applications make an additional call to an app view to fetch note content and related metadata. See [Labeling Architecture](/004-labeling).
 
 ### Privacy and Pseudonymity
 
