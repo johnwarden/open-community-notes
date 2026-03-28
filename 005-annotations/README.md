@@ -9,7 +9,7 @@
     * **Annotation record schema constraint:** any record type used as an annotation must include a `target` field containing the annotated subject URI (an `at://` URI) that matches the label `uri`.
     * **Authorship / trust constraint:** the annotation record referenced by `ref` must be authored by the labeler DID in `src` (i.e., the record’s repo DID equals `label.src`).
         * This avoids needing a strong ref (`refCid`) while ensuring the consumer’s trust in the labeler extends to the referenced record.
-* App Views can include annotations from subscribed labelers when hydrating posts. Annotations can go into the existing `embed` field, using `app.bsky.embed.record` (or a dedicated embed type later, if desired).
+* App Views can include annotations from subscribed labelers when hydrating posts (similar to embeds).
 
 ---
 
@@ -111,7 +111,7 @@ Notes:
 ```json
 {
   "...post data...": "...",
-  "embed": {
+  "annotation": {
     "$type": "app.bsky.embed.record",
     "record": {
       "uri": "at://did:plc:57fl6zy4wmpuknwpgtjqkvlz/org.opencommunitynotes.note/3m2mryxy7zc2c-note-hash123",
@@ -141,7 +141,34 @@ Notes:
 
 ### Optional W3C Annotation Retrieval (Interop)
 
-Example (modeled on the W3C Protocol’s retrieval pattern):
+
+An atproto label maps cleanly to an W3C annotation. For example this atproto label:
+
+```json
+{
+  "src": "did:plc:labelerexample123",
+  "uri": "at://did:plc:alice/app.bsky.feed.post/3kxyz123",
+  "val": "spam",
+  "cts": "2026-03-27T15:42:11Z"
+}
+```
+
+Might map to an W3C annotation that looks like this:
+
+```json
+{
+  "@context": "http://www.w3.org/ns/anno.jsonld",
+  "type": "Annotation",
+  "motivation": "classifying",
+  "target": "at://did:plc:alice/app.bsky.feed.post/3kxyz123",
+  "body": {
+    "type": "SemanticTag",
+    "id":   "at://did:plc:labelerexample/app.bsky.labeler.service/self#rude",
+  }
+}
+```
+
+Any labeler/annotator could implement the W3C Annotations Protocol's REST API for retrieving annotations. When labels include an additional `ref` field pointing to annotation content, this content could be embedded in the annotation record body:
 
 **Request**
 
@@ -165,6 +192,7 @@ Vary: Accept
   "@context": "http://www.w3.org/ns/anno.jsonld",
   "id": "https://bluenotes.social/annotations/anno1",
   "type": "Annotation",
+  "motivation": "contextualizing",
   "created": "2025-12-12T12:00:00Z",
   "body": {
     "id": "at://did:plc:57fl6zy4wmpuknwpgtjqkvlz/org.opencommunitynotes.note/3m2mryxy7zc2c-note-hash123",

@@ -12,7 +12,7 @@ At a high level, the proposal separates:
 - **Public record storage** for note proposals and ratings
 - **Submission services** that accept contributions and apply eligibility, anti-abuse, and privacy controls
 - **Scoring services** that compute note scores or publication decisions
-- **App views** that serve hydrated proposals and published annotations to applications
+- **Aggregations** that serve hydrated proposals and published annotations to applications
 
 This repository is an early draft. It does **not** yet define every aspect of a complete production-ready protocol. In particular, privacy, contributor eligibility, anti-manipulation protections, and some annotation-serving details remain active design areas.
 
@@ -32,11 +32,11 @@ The proposal aims to support a Community Notes system that is:
 1. **Open with credible exit.**  
    Note proposals and ratings live in an open network rather than inside a closed platform database. This allows anyone to inspect the underlying records, verify a service’s published outputs, or build alternative services on top of the same public data.
 
-2. **Cross-platform.**  
-   The protocol is designed to support annotations on any content that can be identified by a URI, including posts on AT Protocol and ActivityPub networks, as well as content from more centralized platforms.
+2. **Cross-protocol.**  
+   The protocol is designed to support annotations on any content that can be identified by a URI, including posts on social networks like ActivityPub.
 
-3. **Extensible beyond Community Notes.**  
-   The same protocol can support broader community moderation workflows. A “note” is one kind of community-authored annotation; the same structure can also support labels or moderation actions such as `scam`, `harassment`, or `misleading`.
+3. **General Peer Moderation.**  
+   The same protocol can support broader community moderation workflows. A “note” is one kind of community-authored annotation; the same structure can also support labels or moderation actions.
 
 The proposal is inspired by Community Notes as deployed on X, but it is not limited to reproducing X’s exact system. Different services may adopt different scoring algorithms, trust models, contributor policies, and moderation policies while still interoperating at the record and interface layer.
 
@@ -45,7 +45,7 @@ The proposal is inspired by Community Notes as deployed on X, but it is not limi
 This proposal is intended to standardize:
 
 - The record types used for note proposals, ratings, and related moderation data
-- The interface between submission services, scoring services, app views, and applications
+- The interface between submission services, scoring services, API servers, and applications
 - The representation of published annotations and related moderation outputs
 - The use of an open network as the underlying persistence layer
 
@@ -82,7 +82,7 @@ Using a custom lexicon, Open Community Notes stores note proposals and ratings a
 - **Scoring Services**  
   Read proposals and votes from the open data layer, run scoring algorithms, and produce scores or publication decisions.
 
-- **App Views**  
+- **Notes API Servers**  
   Serve hydrated proposals and published annotations to apps through query endpoints and labeler or annotation APIs.
 
 ## Design Features
@@ -120,7 +120,7 @@ A Community Note can be understood as a type of **annotation**: information atta
 
 This proposal assumes that a more general AT Protocol annotation mechanism will eventually exist. A draft spec for using labelers as annotators is proposed [here](/005-annotations). Whatever mechanism is adopted by the ATProto community, this draft should align with it.
 
-In the meantime, helpful community notes can be published as labels, while applications make an additional call to an app view to fetch note content and related metadata. See [Labeling Architecture](/004-labeling).
+In the meantime, helpful community notes can be published as labels, while applications make an additional call to a Notes API server to fetch note content and related metadata. See [Labeling Architecture](/004-labeling).
 
 ### Privacy and Pseudonymity
 
@@ -173,8 +173,8 @@ A central design goal of this proposal is **credible exit**: continued operation
 
 Different service roles provide different degrees of replaceability and verifiability.
 
-**App Views** 
-App views, including labelers, serve derived outputs based on data from submission and scoring services. Although users and apps must trust them, their outputs are publicly inspectable and can be recomputed by others, so they are relatively easy to replace.
+**Notes API Servers** 
+Notes API Servers, including labelers, serve derived outputs based on data from submission and scoring services. Although users and apps must trust them, their outputs are publicly inspectable and can be recomputed by others, so they are relatively easy to replace.
 
 **Scoring Services**  
 Scoring services compute scores or publication decisions from publicly available proposal and rating data. Their outputs are verifiable: other parties can inspect the inputs and rerun the scoring logic.
