@@ -82,7 +82,7 @@ It would be straightforward for an App View to act as a W3C-compatible [Annotati
   "...post data...": "...",
   "annotations": [
     {
-      "$type": "app.bsky.annotation",
+      "$type": "app.bsky.annotation.context",
       "record": {
         "uri": "at://did:plc:57fl6zy4wmpuknwpgtjqkvlz/org.opencommunitynotes.note/3m2mryxy7zc2c-note-hash123",
         "cid": "bafyre...example",

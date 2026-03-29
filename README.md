@@ -87,7 +87,7 @@ Using a custom lexicon, Open Community Notes stores note proposals and ratings a
 
 ## Design Features
 
-**Open Records**  
+**Transparent**  
 Note proposals and ratings are stored as public records, enabling independent inspection and verification.
 
 **Algorithm Freedom**  
